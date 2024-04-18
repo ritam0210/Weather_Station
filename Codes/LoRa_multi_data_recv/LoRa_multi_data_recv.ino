@@ -18,15 +18,15 @@
 
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 
-const char * ssid = "TP-Link_907E";
-const char * password = "ritam@09";
+const char * ssid = "Accio_WiFi";
+const char * password = "Accio_Ritam09";
 
 //==================================GOOGLE SHEET CREDENTIALS=========================================
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 19800;
-const int   daylightOffset_sec = 0;
-// Google script ID and required credentials
-String GOOGLE_SCRIPT_ID = "AKfycbwsA3rGqiojLrvoqzV2urXFGGGeJMoqYh6dXqYYfCmSyMY-BVPbkxOOH1y2rRlmG9x6";
+//const char* ntpServer = "pool.ntp.org";
+//const long  gmtOffset_sec = 19800;
+//const int   daylightOffset_sec = 0;
+//// Google script ID and required credentials
+//String GOOGLE_SCRIPT_ID = "AKfycbwsA3rGqiojLrvoqzV2urXFGGGeJMoqYh6dXqYYfCmSyMY-BVPbkxOOH1y2rRlmG9x6";
 
 //===================================================================================================
 
@@ -50,7 +50,7 @@ struct Data
 
 //========================================DISPLAY FUNCTION===========================================
 
-void updatedisplay()
+/*void updatedisplay()
 {
   tft.setTextColor(ILI9341_ORANGE);
   tft.setTextSize(2);
@@ -127,7 +127,7 @@ void updatedisplay()
   tft.setTextColor(ILI9341_YELLOW);
   tft.println(LoRa.packetRssi());
 
-}
+}*/
 //==============================================================================================
 
 void setup() 
@@ -144,18 +144,18 @@ void setup()
     while (1);
   }
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting");
-  while (WiFi.status() != WL_CONNECTED) 
-  {
-    delay(500);
-    Serial.print(".");
-  }
+//  WiFi.mode(WIFI_STA);
+//  WiFi.begin(ssid, password);
+//  Serial.print("Connecting");
+//  while (WiFi.status() != WL_CONNECTED) 
+//  {
+//    delay(500);
+//    Serial.print(".");
+//  }
   
   // Init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  Serial.flush();
+//  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+//  Serial.flush();
   //-----------------------------------------------------------------------------------------------
 }
 
@@ -172,12 +172,12 @@ void loop()
   
   incoming = String(data.Wind_spd) + String(data.Wind_dir) + String(data.Temp) + String(data.Humid) + String(data.Lux) + String(data.UV) + String(data.Pres);
   
-  if (incomingLength != incoming.length()) 
-  {
-    Serial.println(incoming.length());
-    Serial.println("error: message length does not match length");
-    return;
-  }
+//  if (incomingLength != incoming.length()) 
+//  {
+//    Serial.println(incoming.length());
+//    Serial.println("error: message length does not match length");
+//    return;
+//  }
   if (recipient != localAddress) 
   {
     Serial.println("This message is not for me.");
@@ -187,8 +187,8 @@ void loop()
   Serial.println("**********************************************************************");
   Serial.println("Received from: 0x" + String(sender, HEX));
   Serial.println("Sent to: 0x" + String(recipient, HEX));
-//  Serial.println("Message ID: " + String(incomingMsgId));
-//  Serial.println("Message length: " + String(incomingLength));
+  Serial.println("Message ID: " + String(incomingMsgId));
+  Serial.println("Message length: " + String(incomingLength));
 
   Serial.println("Wind_spd: " + String(data.Wind_spd));
   Serial.println("Wind_dir: " + String(data.Wind_dir));
@@ -203,7 +203,7 @@ void loop()
   Serial.println("");
 
   //===================================================================================================
-  if (WiFi.status() == WL_CONNECTED) 
+  /*if (WiFi.status() == WL_CONNECTED) 
   {
     static bool flag = false;
     struct tm timeinfo;
@@ -246,7 +246,7 @@ void loop()
     http.end();
     unsigned long currentMillis = millis();
     Serial.println(currentMillis);
-  }
+  }*/
   
-  updatedisplay();
+//  updatedisplay();
 }

@@ -1,3 +1,4 @@
+//==============================================LIBRARIES=================================================
 #include <Wire.h>
 #include <BH1750.h>
 #include <Adafruit_Sensor.h>
@@ -7,16 +8,18 @@
 #include <SPI.h>
 #include <LoRa.h>
 
+
 #define ss 5
 #define rst 14
 #define dio0 2
 
-#define DHTPIN 4     // Digital pin connected to the DHT sensor
+#define DHTPIN 32     // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
 
 #define SEALEVELPRESSURE_HPA (1013.25)
 #define ALTITUDE 11.0
 
+//============================================PIN DEFINITION==============================================
 BH1750 lightMeter;
 DHT dht(DHTPIN, DHTTYPE);
 Adafruit_LTR390 ltr = Adafruit_LTR390();
@@ -40,7 +43,7 @@ struct Data
 void setup() 
 {
   Serial.begin(115200);
-  //***************************************************************************************************************************  
+  //*********************************************************************************************************  
   Serial.println("LoRa Sender");
   LoRa.setPins(ss, rst, dio0);  
   if (!LoRa.begin(433E6)) 
@@ -50,14 +53,14 @@ void setup()
   }
   Serial.println("LoRa Initializing OK!");
 
-  //***************************************************************************************************************************
+  //*********************************************************************************************************
   // Initialize the I2C bus
   Wire.begin();
 
   lightMeter.begin();
   dht.begin();
 
-  //***************************************************************************************************************************
+  //*********************************************************************************************************
   bool status;
   status = bme.begin(0x76);  
   if (!status) 
@@ -75,37 +78,17 @@ void setup()
   Serial.println("Found LTR sensor!");
 
   ltr.setMode(LTR390_MODE_UVS);
-  if (ltr.getMode() == LTR390_MODE_ALS) 
-  {
-    Serial.println("In ALS mode");
-  } 
-  else 
-  {
-    Serial.println("In UVS mode");
-  }
+//  if (ltr.getMode() == LTR390_MODE_ALS) 
+//  {
+//    Serial.println("In ALS mode");
+//  } 
+//  else 
+//  {
+//    Serial.println("In UVS mode");
+//  }
 
   ltr.setGain(LTR390_GAIN_3);
-//  Serial.print("Gain : ");
-//  switch (ltr.getGain()) 
-//  {
-//    case LTR390_GAIN_1: Serial.println(1); break;
-//    case LTR390_GAIN_3: Serial.println(3); break;
-//    case LTR390_GAIN_6: Serial.println(6); break;
-//    case LTR390_GAIN_9: Serial.println(9); break;
-//    case LTR390_GAIN_18: Serial.println(18); break;
-//  }
-
   ltr.setResolution(LTR390_RESOLUTION_16BIT);
-//  Serial.print("Resolution : ");
-//  switch (ltr.getResolution()) 
-//  {
-//    case LTR390_RESOLUTION_13BIT: Serial.println(13); break;
-//    case LTR390_RESOLUTION_16BIT: Serial.println(16); break;
-//    case LTR390_RESOLUTION_17BIT: Serial.println(17); break;
-//    case LTR390_RESOLUTION_18BIT: Serial.println(18); break;
-//    case LTR390_RESOLUTION_19BIT: Serial.println(19); break;
-//    case LTR390_RESOLUTION_20BIT: Serial.println(20); break;
-//  }
 
   ltr.setThresholds(100, 1000);
   ltr.configInterrupt(true, LTR390_MODE_UVS);
@@ -120,23 +103,24 @@ float getDHT()
   float t = dht.readTemperature();
 
   // Check if any reads failed and exit early (to try again).
-  if (isnan(h) || isnan(t)) 
-  {
-    Serial.println(F("Failed to read from DHT sensor!"));
-//    break;
-  }
+//  if (isnan(h) || isnan(t)) 
+//  {
+//    Serial.println(F("Failed to read from DHT sensor!"));
+////    break;
+//  }
 
   // Compute heat index in Celsius (isFahreheit = false)
   float hic = dht.computeHeatIndex(t, h, false);
 
   Serial.print(F("Humidity: "));
-  Serial.print(h);
-  Serial.print(F("%  Temperature: "));
+  Serial.println(h);
+  Serial.print(F("Temperature: "));
   Serial.print(t);
-  Serial.print(F("°C "));
+  Serial.println(F("°C "));
   Serial.print(hic);
-  Serial.print(F("°C "));
+  Serial.println(F("°C "));
 
+  return h;
 }
 
 float getlux()
@@ -145,6 +129,7 @@ float getlux()
   Serial.print("Light: ");
   Serial.print(lux);
   Serial.println(" lx");
+  return lux;
 }
 
 float getBME()
@@ -155,28 +140,29 @@ float getBME()
   Serial.print(pressure/100.0);
   Serial.println(" hPa");
 
-  Serial.print("Approx. Altitude = ");
-  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
-  Serial.println(" m");
+//  Serial.print("Approx. Altitude = ");
+//  Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+//  Serial.println(" m");
 
-  Serial.println();
+  return pressure/100.0;
 }
 
 float getLTR()
 {
   if (ltr.newDataAvailable()) 
   {
-      Serial.println("UV data: "); 
+      Serial.print("UV data: "); 
       Serial.println(ltr.readUVS());
   }
+  return ltr.readUVS();
 }
 
 void loop() 
 {
-  getDHT();
-  getlux();
-  getBME();
-  getLTR();
+//  getDHT();
+//  getlux();
+//  getBME();
+//  getLTR();
 
   Serial.print("Sending packet: ");
   Serial.println(msgCount);
@@ -184,10 +170,10 @@ void loop()
   data.Wind_spd = 0;
   data.Wind_dir = 0;
   data.Temp = 24.8;
-  data.Humid = 62.4;
-  data.Lux = 1570.0;
-  data.UV = 10.0;
-  data.Pres = 1012.8;
+  data.Humid = getDHT(); //62.4
+  data.Lux = getlux(); //1570.0
+  data.UV = getLTR(); //10.0
+  data.Pres = getBME(); //1012.8
   
   String outgoing = String(data.Wind_spd) + String(data.Wind_dir) + String(data.Temp) + String(data.Humid) + String(data.Lux) + String(data.UV) + String(data.Pres);
   
